@@ -1,0 +1,6 @@
+[submodule "mysql-connector-cpp"]
+	path = mysql-connector-cpp
+	url = https://github.com/mysql/mysql-connector-cpp.git
+[submodule "openssl"]
+	path = openssl
+	url = https://github.com/openssl/openssl.git
