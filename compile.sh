@@ -37,6 +37,41 @@ for i in "${!ACCEPTED_CONFIGURATIONS[@]}"; do
     fi
 done
 
+#Current path
+CURR_DIR="$(pwd)"
+
+echo "
+##################################################################
+#                                                                #
+#          P A T C H I N G   S O U R C E   C O D E               #
+#                                                                #
+##################################################################
+"
+PATCH_FILE=${CURR_DIR}/cross_compile.patch
+cd mysql-connector-cpp
+# Check if the reverse patch can be applied (indicating the patch is already applied)
+if git apply --check --reverse "$PATCH_FILE" >/dev/null 2>&1; then
+    echo "The cross-compile.patch is already applied to mysql-connector-cpp."
+else
+    echo "The cross-compile.patch is not applied. Applying now..."
+    if git apply "$PATCH_FILE"; then
+        echo "Patch successfully applied to mysql-connector-cpp."
+    else
+        echo "Error: Failed to apply patch."
+        exit 1
+    fi
+fi 
+cd -
+   
+echo "
+##################################################################
+#                                                                #
+#              C O M P I L I N G   O P E N S S L                 #
+#            F O R   T A R G E T   P L A T F O R M               #
+#                                                                #
+##################################################################
+"
+
 #build the openssl dependency
 #echo "Compiling OpenSSL..." 
 ./compile_openssl.sh $1 $2
@@ -45,7 +80,6 @@ done
 mkdir -p mysql-connector-cpp/android_libs
 
 # Define absolute paths
-CURR_DIR="$(pwd)"
 OPENSSL_DIR="${CURR_DIR}/openssl/build/out/${ARCH}"
 
 #host architecture separated build folder
