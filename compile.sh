@@ -48,10 +48,37 @@ mkdir -p mysql-connector-cpp/android_libs
 CURR_DIR="$(pwd)"
 OPENSSL_DIR="${CURR_DIR}/openssl/build/out/${ARCH}"
 
-#architecture separated build folder
-BUILD_DIR="mysql-connector-cpp/build/${ARCH}"
-mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+#host architecture separated build folder
+BUILD_HOST_DIR="${CURR_DIR}/mysql-connector-cpp/build/host"
+mkdir -p ${BUILD_HOST_DIR} && cd ${BUILD_HOST_DIR}
+INSTALL_HOST_DIR="${CURR_DIR}/mysql-connector-cpp/build/host/install"
 
+echo "
+##################################################################
+#                                                                #
+#     C O M P I L I N G   P R O T O C   C O M P I L E R          #
+#             F O R   H O S T   P L A T F O R M                  #
+#                                                                #
+##################################################################
+"
+cmake \
+    -G Ninja \
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_HOST_DIR} \
+    ../../cdk/extra/protobuf/
+ninja
+
+#target architecture separated build folder
+BUILD_TARGET_DIR="${CURR_DIR}/mysql-connector-cpp/build/${ARCH}"
+mkdir -p ${BUILD_TARGET_DIR} && cd ${BUILD_TARGET_DIR}
+
+echo "
+##################################################################
+#                                                                #
+#   C O M P I L I N G   F O R   T A R G E T   P L A T F O R M    #
+#                                                                #
+##################################################################
+"
+ 
 ${ANDROID_CMAKE}/cmake \
     -G Ninja \
     -DCMAKE_SYSTEM_NAME=Android \
@@ -71,6 +98,7 @@ ${ANDROID_CMAKE}/cmake \
     -DWITH_LZ4=ON \
     -DWITH_ZLIB=ON \
     -DWITH_PROTOBUF=ON \
+    -DWITH_PROTOC=${BUILD_HOST_DIR}/runtime_output_directory/protoc \
     -DCMAKE_BUILD_TYPE=Release \
     -DWITH_TESTS=OFF \
     -DWITH_JDBC=OFF \
