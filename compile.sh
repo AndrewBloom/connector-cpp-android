@@ -51,7 +51,6 @@ OPENSSL_DIR="${CURR_DIR}/openssl/build/out/${ARCH}"
 #host architecture separated build folder
 BUILD_HOST_DIR="${CURR_DIR}/mysql-connector-cpp/build/host"
 mkdir -p ${BUILD_HOST_DIR} && cd ${BUILD_HOST_DIR}
-INSTALL_HOST_DIR="${CURR_DIR}/mysql-connector-cpp/build/host/install"
 
 echo "
 ##################################################################
@@ -63,7 +62,6 @@ echo "
 "
 cmake \
     -G Ninja \
-    -DCMAKE_INSTALL_PREFIX=${INSTALL_HOST_DIR} \
     ../../cdk/extra/protobuf/
 ninja
 
