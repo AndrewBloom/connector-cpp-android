@@ -103,6 +103,24 @@ cmake \
     ../../../cdk/extra/protobuf/
 ninja
 
+#creates the CMakeLists.txt for save_linker_opts if does not exist
+LIBUTILS_CMAKE_DIR="${CURR_DIR}/mysql-connector-cpp/cmake/libutils"
+
+if [ ! -f "${LIBUTILS_CMAKE_DIR}/CMakeLists.txt" ]; then
+    echo "Creating CMakeLists.txt in ${LIBUTILS_CMAKE_DIR}"
+    cat > "${LIBUTILS_CMAKE_DIR}/CMakeLists.txt" << 'EOF'
+cmake_minimum_required(VERSION 3.10)
+project(save_linker_opts)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_executable(save_linker_opts save_linker_opts.cc)
+EOF
+else
+    echo "CMakeLists.txt already exists in ${LIBUTILS_CMAKE_DIR}"
+fi
+
 cd ${BUILD_HOST_SAVE_LINKER_OPTS_DIR}
 cmake \
     -G Ninja \
