@@ -47,6 +47,26 @@ index e3fec4ee..35412ab9 100644
  set(EXT_DIR ${CMAKE_CURRENT_LIST_DIR}/ext CACHE INTERNAL "external project utils location")
  
  
+diff --git a/cdk/foundation/CMakeLists.txt b/cdk/foundation/CMakeLists.txt
+index 3cd3bfc4..57ee5220 100644
+--- a/cdk/foundation/CMakeLists.txt
++++ b/cdk/foundation/CMakeLists.txt
+@@ -67,10 +67,14 @@ target_link_libraries(cdk_foundation
+ 
+ IF(WIN32)
+   target_link_libraries(cdk_foundation PRIVATE dnsapi)
+-ELSEIF(NOT FREEBSD)
++ELSEIF(NOT FREEBSD AND NOT ANDROID)
+   target_link_libraries(cdk_foundation PRIVATE resolv)
+ ENDIF()
+ 
++IF(ANDROID)
++  target_link_libraries(cdk_foundation PRIVATE android)
++ENDIF(ANDROID)
++
+ IF(WIN32)
+   target_link_libraries(cdk_foundation PRIVATE ws2_32)
+ ENDIF(WIN32)
 diff --git a/cdk/foundation/socket_detail.cc b/cdk/foundation/socket_detail.cc
 index ffea5d61..19e15c75 100644
 --- a/cdk/foundation/socket_detail.cc
