@@ -1,21 +1,8 @@
 diff --git a/cdk/cmake/DepFindProtobuf.cmake b/cdk/cmake/DepFindProtobuf.cmake
-index 1fc785e3..e7894add 100644
+index 1fc785e3..55af684e 100644
 --- a/cdk/cmake/DepFindProtobuf.cmake
 +++ b/cdk/cmake/DepFindProtobuf.cmake
-@@ -62,8 +62,12 @@ endif()
- add_ext_targets(protobuf
-   LIBRARY protobuf-lite pb_libprotobuf-lite
-   LIBRARY protobuf pb_libprotobuf
-+)
-+if (NOT CMAKE_CROSSCOMPILING)
-+add_ext_targets(protobuf
-   EXECUTABLE protoc pb_protoc
- )
-+endif()
- 
- 
- # Standard PROTOBUF_GENERATE_CPP modified to our usage
-@@ -77,6 +81,12 @@ function(mysqlx_protobuf_generate_cpp SRCS HDRS)
+@@ -77,6 +77,12 @@ function(mysqlx_protobuf_generate_cpp SRCS HDRS)
    SET(srcs)
    SET(hdrs)
  
@@ -28,7 +15,7 @@ index 1fc785e3..e7894add 100644
    FOREACH(FIL ${ARGN})
      GET_FILENAME_COMPONENT(ABS_FIL ${FIL} ABSOLUTE)
      GET_FILENAME_COMPONENT(FIL_WE ${FIL} NAME_WE)
-@@ -90,7 +100,7 @@ function(mysqlx_protobuf_generate_cpp SRCS HDRS)
+@@ -90,7 +96,7 @@ function(mysqlx_protobuf_generate_cpp SRCS HDRS)
        "${CMAKE_CURRENT_BINARY_DIR}/protobuf/${FIL_WE}.pb.h"
        COMMAND ${CMAKE_COMMAND}
        -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/protobuf"
@@ -37,45 +24,29 @@ index 1fc785e3..e7894add 100644
        ARGS --cpp_out "${CMAKE_CURRENT_BINARY_DIR}/protobuf"
        -I ${ABS_PATH} ${ABS_FIL}
  
-diff --git a/cdk/extra/protobuf/CMakeLists.txt b/cdk/extra/protobuf/CMakeLists.txt
-index adc19f55..9ace09fd 100644
---- a/cdk/extra/protobuf/CMakeLists.txt
-+++ b/cdk/extra/protobuf/CMakeLists.txt
-@@ -56,7 +56,6 @@
- # - disable installation script
- # - fix minor compilation issues on SunPro 5.14.0
+diff --git a/cdk/cmake/dependency.cmake b/cdk/cmake/dependency.cmake
+index e3fec4ee..35412ab9 100644
+--- a/cdk/cmake/dependency.cmake
++++ b/cdk/cmake/dependency.cmake
+@@ -62,6 +62,18 @@ set(EXT_FWD
+   MSVC
+ )
  
--
- cmake_minimum_required(VERSION 3.1)
- PROJECT(Protobuf)
++# ANDROID SPECIFIC VARIABLES FOR CROSS COMPILATION
++get_cmake_property(cache_vars CACHE_VARIABLES)
++
++foreach(var ${cache_vars})
++    if(var MATCHES "ANDROID|TOOLCHAIN")
++        get_property(type CACHE ${var} PROPERTY TYPE)
++        if(NOT type STREQUAL "INTERNAL")
++            list(APPEND EXT_FWD ${var})
++        endif()
++    endif()
++endforeach()
++
+ set(EXT_DIR ${CMAKE_CURRENT_LIST_DIR}/ext CACHE INTERNAL "external project utils location")
  
-@@ -127,4 +126,6 @@ endmacro()
  
- pb_export(libprotobuf-lite)
- pb_export(libprotobuf)
--pb_export(protoc)
-+if (NOT CMAKE_CROSSCOMPILING)
-+  pb_export(protoc)
-+endif()
-diff --git a/cdk/extra/protobuf/protobuf-3.19.6/cmake/CMakeLists.txt b/cdk/extra/protobuf/protobuf-3.19.6/cmake/CMakeLists.txt
-index f45f5a92..b193ceaf 100644
---- a/cdk/extra/protobuf/protobuf-3.19.6/cmake/CMakeLists.txt
-+++ b/cdk/extra/protobuf/protobuf-3.19.6/cmake/CMakeLists.txt
-@@ -47,8 +47,12 @@ endif()
- option(protobuf_BUILD_TESTS "Build tests" ON)
- option(protobuf_BUILD_CONFORMANCE "Build conformance tests" OFF)
- option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
--option(protobuf_BUILD_PROTOC_BINARIES "Build libprotoc and protoc compiler" ON)
--option(protobuf_BUILD_LIBPROTOC "Build libprotoc" OFF)
-+if (NOT CMAKE_CROSSCOMPILING)
-+  option(protobuf_BUILD_PROTOC_BINARIES "Build libprotoc and protoc compiler" ON)
-+else()
-+  option(protobuf_BUILD_PROTOC_BINARIES "Build libprotoc and protoc compiler" OFF)
-+  option(protobuf_BUILD_LIBPROTOC "Build libprotoc" ON)
-+endif()
- option(protobuf_DISABLE_RTTI "Remove runtime type information in the binaries" OFF)
- if (BUILD_SHARED_LIBS)
-   set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
 diff --git a/cdk/foundation/socket_detail.cc b/cdk/foundation/socket_detail.cc
 index ffea5d61..19e15c75 100644
 --- a/cdk/foundation/socket_detail.cc
