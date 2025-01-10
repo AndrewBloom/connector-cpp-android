@@ -122,3 +122,43 @@ index ffea5d61..19e15c75 100644
  #else
  
  std::forward_list<Srv_host_detail> srv_list(const std::string &hostname)
+diff --git a/cmake/libutils.cmake b/cmake/libutils.cmake
+index 848b7cfe..d43bf6a7 100644
+--- a/cmake/libutils.cmake
++++ b/cmake/libutils.cmake
+@@ -116,7 +116,7 @@ macro(libutils_setup)
+   # were passed to it. It is used to capture linker invocation options.
+   #
+ 
+-  if(NOT MSBUILD AND NOT TARGET save_linker_opts)
++  if(NOT MSBUILD AND NOT CMAKE_CROSSCOMPILING AND NOT TARGET save_linker_opts)
+     add_executable(save_linker_opts ${LIBUTILS_SCRIPT_DIR}/save_linker_opts.cc)
+     set_property(TARGET save_linker_opts PROPERTY
+       RUNTIME_OUTPUT_DIRECTORY ${LIBUTILS_BIN_DIR}
+@@ -235,9 +235,14 @@ function(merge_libraries TARGET)
+     # (name of the file is passed as the first parameter).
+     #
+ 
+-    add_dependencies(${TARGET}-deps save_linker_opts)
+-    set_target_properties(${TARGET}-deps PROPERTIES
+-      RULE_LAUNCH_LINK "${LIBUTILS_BIN_DIR}/save_linker_opts ${log_file}.STATIC "
++    if (NOT CMAKE_CROSSCOMPILING)
++    	add_dependencies(${TARGET}-deps save_linker_opts)
++    	set(SAVE_LINKER_OPTS ${LIBUTILS_BIN_DIR}/save_linker_opts)
++    else()
++	set(SAVE_LINKER_OPTS ${WITH_SAVE_LINKER_OPTS})
++    endif()
++    	set_target_properties(${TARGET}-deps PROPERTIES
++		RULE_LAUNCH_LINK "${SAVE_LINKER_OPTS} ${log_file}.STATIC "
+     )
+ 
+     # Arrange for ${TARGET}-deps to be built before ${TARGET}
+@@ -255,7 +260,7 @@ function(merge_libraries TARGET)
+     #
+ 
+     set_target_properties(${TARGET} PROPERTIES
+-      RULE_LAUNCH_LINK "${LIBUTILS_BIN_DIR}/save_linker_opts ${log_file}.SHARED "
++      RULE_LAUNCH_LINK "${SAVE_LINKER_OPTS} ${log_file}.SHARED "
+     )
+ 
+   else(NOT MSVC)

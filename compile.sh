@@ -84,19 +84,29 @@ OPENSSL_DIR="${CURR_DIR}/openssl/build/out/${ARCH}"
 
 #host architecture separated build folder
 BUILD_HOST_DIR="${CURR_DIR}/mysql-connector-cpp/build/host"
-mkdir -p ${BUILD_HOST_DIR} && cd ${BUILD_HOST_DIR}
+BUILD_HOST_PROTOBUF_DIR="${BUILD_HOST_DIR}/protobuf"
+BUILD_HOST_SAVE_LINKER_OPTS_DIR="${BUILD_HOST_DIR}/save_linker_opts"
+mkdir -p ${BUILD_HOST_SAVE_LINKER_OPTS_DIR}
+mkdir -p ${BUILD_HOST_PROTOBUF_DIR} && cd ${BUILD_HOST_PROTOBUF_DIR}
 
 echo "
 ##################################################################
 #                                                                #
-#     C O M P I L I N G   P R O T O C   C O M P I L E R          #
+#      C O M P I L I N G   P R O T O C   C O M P I L E R         #
+#      & S A V E _ L I N K E R _ O P T S   U T I L I T Y         #
 #             F O R   H O S T   P L A T F O R M                  #
 #                                                                #
 ##################################################################
 "
 cmake \
     -G Ninja \
-    ../../cdk/extra/protobuf/
+    ../../../cdk/extra/protobuf/
+ninja
+
+cd ${BUILD_HOST_SAVE_LINKER_OPTS_DIR}
+cmake \
+    -G Ninja \
+    ../../../cmake/libutils/
 ninja
 
 #target architecture separated build folder
@@ -130,7 +140,8 @@ ${ANDROID_CMAKE}/cmake \
     -DWITH_LZ4=ON \
     -DWITH_ZLIB=ON \
     -DWITH_PROTOBUF=ON \
-    -DWITH_PROTOC=${BUILD_HOST_DIR}/runtime_output_directory/protoc \
+    -DWITH_PROTOC=${BUILD_HOST_PROTOBUF_DIR}/runtime_output_directory/protoc \
+    -DWITH_SAVE_LINKER_OPTS=${BUILD_HOST_SAVE_LINKER_OPTS_DIR}/save_linker_opts \
     -DCMAKE_BUILD_TYPE=Release \
     -DWITH_TESTS=OFF \
     -DWITH_JDBC=OFF \
@@ -140,6 +151,6 @@ ${ANDROID_CMAKE}/cmake \
 #find . -type f -name "CMakeSystem.cmake" -exec sed -i 's/CMAKE_SYSTEM_VERSION "1"/CMAKE_SYSTEM_VERSION "29"/g' {} +
 #find . -type f -name "CMakeCache.txt" -exec sed -i 's/CMAKE_SYSTEM_VERSION:UNINITIALIZED=1/CMAKE_SYSTEM_VERSION:UNINITIALIZED=29/g' {} +
 
-ninja
-ninja install
+${ANDROID_CMAKE}/ninja
+${ANDROID_CMAKE}/ninja install
 
