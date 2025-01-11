@@ -47,6 +47,21 @@ index e3fec4ee..35412ab9 100644
  set(EXT_DIR ${CMAKE_CURRENT_LIST_DIR}/ext CACHE INTERNAL "external project utils location")
  
  
+diff --git a/cdk/extra/zstd/CMakeLists.txt b/cdk/extra/zstd/CMakeLists.txt
+index 0ed58f63..5a49bbe0 100644
+--- a/cdk/extra/zstd/CMakeLists.txt
++++ b/cdk/extra/zstd/CMakeLists.txt
+@@ -63,6 +63,10 @@ IF((LINUX OR APPLE) AND NOT ARM_CPU)
+     )
+ ENDIF()
+ 
++if(ANDROID)
++	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDYNAMIC_BMI2=0")
++endif()
++
+ ADD_LIBRARY(zstd STATIC ${ZSTD_SRCS})
+ set_target_properties(zstd PROPERTIES FOLDER "Misc")
+ 
 diff --git a/cdk/foundation/CMakeLists.txt b/cdk/foundation/CMakeLists.txt
 index 3cd3bfc4..57ee5220 100644
 --- a/cdk/foundation/CMakeLists.txt
